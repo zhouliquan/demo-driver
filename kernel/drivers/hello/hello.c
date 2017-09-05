@@ -337,4 +337,31 @@ fail:
 
 /*模块卸载方法*/
 static void __exit hello_exit(void){
+    dev_t devno = MKDEV(hello_major, hello_minor);
+
+    printk(KERN_ALERT"Destory hello device.\n");
+
+    /*删除/proc/hello文件*/
+    hello_remove_proc();
+
+    /*销毁设备类别和设备*/
+    if(hello_class){
+        device_destory(hello_class, MKDEV(hello_major, hello_minor));
+        class_destory(hello_class);
+    }
+
+    /*删除字符设备和释放设备内存*/
+    if(hello_dev){
+        cdev_del(&(hello_dev->dev));
+        kfree(hello_dev);
+    }
+
+    /*释放设备号*/
+    unregister_chrdev_region(devno, 1);
 }
+
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("First Android Driver");
+
+module_init(hello_init);
+module_exit(hello_exit);
